@@ -1,0 +1,145 @@
+import pygame
+from random import randrange
+
+preto = (0, 0, 0)
+branco = (255, 255, 255)
+vermelho = (255, 0, 0)
+verde = (0, 255, 0)
+ciano = (211,	252, 255)
+
+largura = 320
+altura = 240
+tamanho = 10
+placar = ()
+
+try:
+    pygame.init()
+except:
+    print('Módulo "pygame" não encontrado')
+
+fundo = pygame.display.set_mode((largura, altura))
+pygame.display.set_caption("Snake by jp")
+relogio = pygame.time.Clock()
+
+
+def texto(msg, cor, tam, x, y):
+    font = pygame.font.SysFont(None, tam)
+    txt = font.render(msg, True, cor)
+    fundo.blit(txt, [x, y])
+
+
+def maca(maca_x, maca_y):
+    pygame.draw.rect(fundo, vermelho, [maca_x, maca_y, tamanho, tamanho])
+
+
+def cobra(CobraXY):
+    for pos in CobraXY:
+        pygame.draw.rect(fundo, verde, [pos[0], pos[1], tamanho, tamanho])
+
+
+def jogo():
+    pos_x = randrange(0, (largura-tamanho), 10)
+    pos_y = randrange(0, (altura-tamanho), 10)
+    maca_x = randrange(0, (largura-tamanho), 10)
+    maca_y = randrange(0, (altura-tamanho), 10)
+
+    velocidade_x = velocidade_y = 0
+
+    sair = False
+    fimdejogo = False
+    cobraXY = [] #posições da cobra
+    cobraCOMPRIMENTO = 3
+    score = 0
+
+    while sair is False:
+        while fimdejogo is True:
+            fundo.fill(ciano)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    fimdejogo = False
+                    sair = True
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_c:
+                        pos_x = randrange(0, (largura - tamanho), 10)
+                        pos_y = randrange(0, (altura - tamanho), 10)
+                        maca_x = randrange(0, (largura - tamanho), 10)
+                        maca_y = randrange(0, (altura - tamanho), 10)
+
+                        velocidade_x = velocidade_y = 0
+
+                        sair = False
+                        fimdejogo = False
+                        cobraXY = []  #posições da cobra
+                        cobraCOMPRIMENTO = 3
+                        score = 0
+
+                    elif event.key == pygame.K_s:
+                        sair = True
+                        fimdejogo = False
+
+            texto("FIM DE JOGO", vermelho, 50, 55, 35)
+            texto(f"Pontuação Final: {str(score)}", preto, 25, 85, 90)
+            texto("Continuar(c)", preto, 25, 110, 150)
+            texto("Sair(s)", preto, 25, 135, 170)
+
+            pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sair = True
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT and velocidade_x != tamanho:
+                    velocidade_y = 0
+                    velocidade_x = -tamanho
+                elif event.key == pygame.K_RIGHT and velocidade_x != -tamanho:
+                    velocidade_y = 0
+                    velocidade_x = tamanho
+                elif event.key == pygame.K_UP and velocidade_y != tamanho:
+                    velocidade_x = 0
+                    velocidade_y = -tamanho
+                elif event.key == pygame.K_DOWN and velocidade_y != -tamanho:
+                    velocidade_x = 0
+                    velocidade_y = tamanho
+                elif event.key == pygame.K_x:
+                    cobraCOMPRIMENTO += 1
+                    score += 1
+
+        if sair is False:
+            fundo.fill(ciano)
+            texto(f"Pontuação: {str(score)}", preto, 20, 220, 210)
+            pos_x += velocidade_x
+            pos_y += velocidade_y
+
+            cobraINICIO = []
+            cobraINICIO.append(pos_x)
+            cobraINICIO.append(pos_y)
+            cobraXY.append(cobraINICIO)
+            cobra(cobraXY)
+            maca(maca_x, maca_y)
+
+            if len(cobraXY) > cobraCOMPRIMENTO: 
+                del cobraXY[0]
+
+            if any(Parte == cobraINICIO for Parte in cobraXY[:-3]): 
+                fimdejogo = True                                    
+
+            if pos_x + tamanho > largura:
+                fimdejogo = True
+            elif pos_x < 0:
+                fimdejogo = True
+
+            elif pos_y + tamanho > altura:
+                fimdejogo = True
+            elif pos_y < 0:
+                fimdejogo = True
+
+            if pos_x == maca_x and pos_y == maca_y:
+                maca_x = randrange(0, (largura-tamanho), 10)
+                maca_y = randrange(0, (altura-tamanho), 10)
+                cobraCOMPRIMENTO += 1
+                score += 1
+
+            relogio.tick(15)
+            pygame.display.update()
+    pygame.quit()
+jogo()
